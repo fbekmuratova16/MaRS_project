@@ -38,7 +38,7 @@ class Molecules(db.Entity):
     def get_fingerprints(molecules):
         matrix = fragmentor_mol.get(molecules)['X']
         # todo: zulfia
-        return fingerprints
+   #     return fingerprints
 
     @staticmethod
     def get_fear(molecule):
@@ -51,12 +51,18 @@ class Reactions(db.Entity):
     fingerprint = Required(buffer)
     molecules = Set('ReactionsMolecules', cascade_delete=True)
 
+    #Таблица реакиц это просто запись, что там нужно делать, к ней нужно подключить таблицу молекул, а была ли такая молекула в таблице молекул
+    # если нет то добавить с марингом и изоморфным вложение и указанием роли. ИМ чтобы выяснить. МАР - словарь превратить в словарь цифр, пар столько сколько и атомов лист имеет четкое число элементов.
+    #добавление объектов мэни ту мэни в пони
+    def __init__(self, fingerprint=None,):
+        pass
+
     @staticmethod
     def get_fingerprints(reactions, get_cgr=False):
         cgrs = []
         matrix = fragmentor_rct.get(cgrs)['X']
         # todo: zulfia
-        return (fingerprints, cgrs) if get_cgr else fingerprints
+  #      return (fingerprints, cgrs) if get_cgr else fingerprints
 
     @staticmethod
     def get_reaction(reaction):
@@ -106,3 +112,5 @@ class ReactionsMolecules(db.Entity):
 
 db.bind("sqlite", ":memory:")
 db.generate_mapping(create_tables=True)
+
+
