@@ -1,15 +1,9 @@
 import numpy as np
 from sklearn.neighbors import DistanceMetric, BallTree
+from models import Molecules, Reactions
 
-s = [b'\x30\x31\x30\x30\x31\x30\x31\x30', b'\x31\x30\x31\x30\x31\x30\x31\x30',
-     b'\x30\x31\x30\x30\x30\x30\x30\x30', b'\x30\x31\x30\x30\x31\x30\x31\x30',
-     b'\x31\x30\x31\x30\x30\x30\x30\x31', b'\x30\x30\x31\x30\x30\x30\x31\x30',
-     b'\x30\x31\x30\x30\x30\x30\x31\x30', b'\x31\x30\x30\x30\x31\x30\x30\x31',
-     b'\x31\x30\x30\x30\x30\x30\x30\x31', b'\x31\x30\x30\x31\x30\x30\x31\x30']
-q = b'\x31\x30\x31\x31\x31\x30\x31\x30'
-npq = np.fromstring(q, dtype = np.uint8)
-by_q = np.unpackbits(npq)
-q1 = np.matrix(by_q)
+s = select( m for m in Molecules).order_by(Molecules.fingerprint)[:]
+s = select( m for m in Reactions).order_by(Reactions.fingerprint)[:]
 
 def npmatrix(fp):
     a = []
@@ -21,5 +15,5 @@ def npmatrix(fp):
     return b
 
 tree = BallTree(npmatrix(s), metric='jaccard')
-dist, ind = tree.query(q1, k=3)
+dist, ind = tree.query(q, k=10)
 print(dist, ind)
