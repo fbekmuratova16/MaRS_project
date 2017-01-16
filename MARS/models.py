@@ -65,7 +65,7 @@ class Reactions(db.Entity):
   #      return (fingerprints, cgrs) if get_cgr else fingerprints
 
     @staticmethod
-    def get_reaction(reaction):
+    def get_reaction  (reaction):
         cgr = cgr_core.getCGR(reaction)
         return Reactions.get(fear=fear.getreactionhash(cgr))
 
