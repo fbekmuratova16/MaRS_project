@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 
-from pony.orm import Database, PrimaryKey, Required, Set, Json, buffer, left_join
+from pony.orm import Database, PrimaryKey, Required, Set, Json, buffer, left_join, sql_debug
 from CGRtools.FEAR import FEAR
 from networkx.readwrite.json_graph import node_link_data, node_link_graph
 from MODtools.descriptors.fragmentor import Fragmentor
@@ -18,7 +19,7 @@ class Molecules(db.Entity):
     id = PrimaryKey(int, auto=True)
     data = Required(Json)
     fear = Required(str, unique=True)
-    fingerprint = Required(buffer)
+    fingerprint = Required(bytes)
     reactions = Set('ReactionsMolecules')
 
     def __init__(self, molecule, fingerprint=None):
@@ -28,7 +29,7 @@ class Molecules(db.Entity):
         if fingerprint is None:
             fingerprint = self.get_fingerprints([molecule])[0]
 
-        super(self, Molecules).__init__(data=data, fear=fear_str, fingerprint=fingerprint)
+        super(Molecules,self).__init__(data=data, fear=fear_str, fingerprint=fingerprint)
 
     @staticmethod
     def get_molecule(molecule):
@@ -36,9 +37,13 @@ class Molecules(db.Entity):
 
     @staticmethod
     def get_fingerprints(molecules):
-        matrix = fragmentor_mol.get(molecules)['X']
+        fp_list = []
+        for i in molecules:
+            fp_list.append(b'0101')
+
+        #matrix = fragmentor_mol.get(molecules)['X']
         # todo: zulfia
-   #     return fingerprints
+        return fp_list
 
     @staticmethod
     def get_fear(molecule):
@@ -65,7 +70,7 @@ class Reactions(db.Entity):
   #      return (fingerprints, cgrs) if get_cgr else fingerprints
 
     @staticmethod
-    def get_reaction  (reaction):
+    def get_reaction(reaction):
         cgr = cgr_core.getCGR(reaction)
         return Reactions.get(fear=fear.getreactionhash(cgr))
 
@@ -110,7 +115,7 @@ class ReactionsMolecules(db.Entity):
     mapping = Required(Json)
 
 
-db.bind("sqlite", ":memory:")
+db.bind("sqlite", "data.db")
 db.generate_mapping(create_tables=True)
-
+sql_debug(True)
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import argparse
 from MARS.version import version
 from MARS.parsers import structure_search_molecules

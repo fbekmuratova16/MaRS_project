@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import argparse
 from .CLI.main_structure_search import structure_reaction_search_core
 from .CLI.main_structure_search import structure_molecule_search_core
