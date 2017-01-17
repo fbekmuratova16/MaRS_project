@@ -3,6 +3,7 @@ import traceback
 from CGRtools.files.RDFrw import RDFread, RDFwrite
 from itertools import count
 import itertools
+from MARS.models import Molecules
 
 
 def fill_database_core(**kwargs):
@@ -17,4 +18,22 @@ def fill_database_core(**kwargs):
                 y.remove(None)
             x = tuple(y)
         print(x)
+        substrats_list = []
+        products_list = []
+        for i in x:
+            substrats = i['substrats']
+            substrats_list.append(substrats)
+            products = i['products']
+            products_list.append(products)
+            sustrats_fp = Molecules.get_fingerprints(substrats_list)
+            products_fp = Molecules.get_fingerprints(products_list)
+
+
+        print(substrats_list)
+        print(products_list)
+
+
+
+
+
 
