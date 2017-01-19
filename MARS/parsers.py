@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import argparse
 from .CLI.main_structure_search import structure_reaction_search_core
 from .CLI.main_structure_search import structure_molecule_search_core
 from .CLI.main_substructure_search import substructure_search_core
 from .CLI.main_similarity_search import similarity_search_core
+from .CLI.main_fill_database import fill_database_core
 
 
 def structure_search_molecules(subparsers):
@@ -58,3 +61,14 @@ def substructure_search(subparsers):
                         help="Indexes of Molecules with needed fragment in database")
 
     parser.set_defaults(func=substructure_search_core)
+
+
+def fill_database(subparsers):
+    parser = subparsers.add_parser('dbfill',
+                                   help=' This utility fills database with new entities ',
+                                   formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--input", "-i", default="input.rdf", type=argparse.FileType('r'),
+                        help="RDF inputfile")
+    parser.add_argument("--chunksize","-cs",type=int, default =100, help='RDFread portion size')
+
+    parser.set_defaults(func=fill_database_core)
