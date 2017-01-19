@@ -6,7 +6,9 @@ from CGRtools.files.RDFrw import RDFread, RDFwrite
 from itertools import count
 import itertools
 from MARS.models import Molecules
-from pony.orm import db_session, exists
+from pony.orm import db_session
+from MARS.models import Reactions
+from MARS.models import ReactionsMolecules
 
 
 def fill_database_core(**kwargs):
@@ -43,13 +45,18 @@ def fill_database_core(**kwargs):
         with db_session():
             for i in range(0,len(substrats_list)):
                 substrat_fear = Molecules.get_fear(substrats_list[i])
-                if not Molecules.exists(fear = substrat_fear):
+                if not Molecules.exists(fear=substrat_fear):
                     Molecules(substrats_list[i],substrats_fp[i])
 
             for i in range(0,len(products_list)):
                 product_fear = Molecules.get_fear(products_list[i])
-                if not Molecules.exists(fear = product_fear ):
+                if not Molecules.exists(fear=product_fear ):
                     Molecules(products_list[i], products_fp[i])
+
+            for i in range(0,len(x)):
+                react_fear = Reactions.get_reaction_fear(x[i])
+                if not Reactions.exists(fear=react_fear):
+                    Reactions()
 
 
 

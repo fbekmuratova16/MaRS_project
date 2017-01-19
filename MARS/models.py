@@ -106,6 +106,10 @@ class Reactions(db.Entity):
 
         return reduce(set.intersection, d.values())
 
+    @staticmethod
+    def get_reaction_fear(reaction):
+        return fear.getreactionhash(reaction)
+
 
 class ReactionsMolecules(db.Entity):
     id = PrimaryKey(int, auto=True)
@@ -113,6 +117,9 @@ class ReactionsMolecules(db.Entity):
     reaction = Required(Reactions)
     product = Required(bool)
     mapping = Required(Json)
+
+    def __init__(self,molecule,reaction):
+        pass
 
 
 db.bind("sqlite", "data.db")
