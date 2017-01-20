@@ -123,11 +123,11 @@ class Reactions(db.Entity):
         return list(q)
 
     @staticmethod
-    def get_reactions_by_molecules(product=None, reagent=None):
+    def get_reactions_by_molecules(molecule, product=None, reagent=None):
         d = dict()
         if product is not None:
             for i in product:
-                d[i] = set()
+                d[fear.getreactionhash(molecule)] = set()
             for m, r in left_join(
                     (m.fear, r) for m in Molecules if m.fear in [fear.getreactionhash(x) for x in product] for rs in
                     m.reactions if rs.product for r in rs.reactions):
@@ -135,7 +135,7 @@ class Reactions(db.Entity):
 
         if reagent is not None:
             for i in reagent:
-                d[i] = set()
+                d[fear.getreactionhash(molecule)] = set()
             for m, r in left_join(
                     (m.fear, r) for m in Molecules if m.fear in [fear.getreactionhash(x) for x in reagent] for rs in
                     m.reactions if not rs.product for r in rs.reactions):
