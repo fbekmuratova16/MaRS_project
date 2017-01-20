@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from pony.orm import Database, PrimaryKey, Required, Set, Json, buffer, left_join, sql_debug
+from pony.orm import Database, PrimaryKey, Required, Set, Json, buffer, left_join, sql_debug, select, commit
 from CGRtools.FEAR import FEAR
 from networkx.readwrite.json_graph import node_link_data, node_link_graph
 from MODtools.descriptors.fragmentor import Fragmentor
 from CGRtools.CGRcore import CGRcore
 from functools import reduce
+
+
 
 
 db = Database()
@@ -59,8 +61,43 @@ class Reactions(db.Entity):
     #Таблица реакиц это просто запись, что там нужно делать, к ней нужно подключить таблицу молекул, а была ли такая молекула в таблице молекул
     # если нет то добавить с марингом и изоморфным вложение и указанием роли. ИМ чтобы выяснить. МАР - словарь превратить в словарь цифр, пар столько сколько и атомов лист имеет четкое число элементов.
     #добавление объектов мэни ту мэни в пони
-    def __init__(self, fingerprint=None,):
-        pass
+    def __init__(self, reaction, fingerprint=None,):
+        tempfear = Reactions.get_reaction_fear(reaction)
+        query0 = select(r.id for r in Reactions if tempfear == r.fear)[:]
+        # проверка на наличие переданной реакции в БД
+        if query0.len() == 0:
+            # Если такой реакции нет в БД
+            super(self, Reactions).__init__(fear=tempfear, fingerprint=fingerprint)
+
+            for molecs in reaction.substarts:
+                 tempfearm1 = Molecules.get_fear(molecs)
+                 molecule = Molecules.get(fear = tempfearm1)
+                 # существуют ли исходные в-ва реакции в БД. Проверка по строковому представлению молекулы
+
+                 if not molecule:
+                     molecule = Molecules(molecs)
+
+                 rm = ReactionsMolecules(molecule=molecule, reaction=self, product=False, mapping=dict([]))
+
+            for molecp in reaction.products:
+                 tempfearm2 = Molecules.get_fear(molecp)
+                 query2 = Molecules.get(fear = tempfearm2)
+                 # существуют ли образующиеся в-ва реакции в БД. Проверка по строковому представлению молекулы
+
+                 if not query2:
+                     fear_str = Molecules.get_fear(molecp)
+                     data = node_link_data(molecp)
+                     if fingerprint is None:
+                         fingerprint = self.get_fingerprints([molecp])[0]
+                      mp = Molecules(m, fear =fear_str, fingerprint=fingerprint)
+
+                 rm = ReactionsMolecules(molecule=mp, reaction=self, product=True, mapping=dict([]))
+
+            commit()
+
+        else:
+            pass
+
 
     @staticmethod
     def get_fingerprints(reactions, get_cgr=False):
@@ -118,8 +155,6 @@ class ReactionsMolecules(db.Entity):
     product = Required(bool)
     mapping = Required(Json)
 
-    def __init__(self,molecule,reaction):
-        pass
 
 
 db.bind("sqlite", "data.db")

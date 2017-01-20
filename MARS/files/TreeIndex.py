@@ -2,10 +2,11 @@ import numpy as np
 import pickle
 from sklearn.neighbors import BallTree
 from pony.orm import select
-from MARS.models import *
+from MARS.models import Molecules, Reactions
 from os import path
 
-dump_dir = 'C://'
+dump_dir = '.'
+
 
 class TreeIndex(object):
 
@@ -31,9 +32,11 @@ class TreeIndex(object):
         self.__data = data
         self.__ids = ids
 
-    def get_similar(self, structure):
+    def get_similar(self, structure, num):
         q1 = self.__data.get_fingerprints([structure])
         by_q = np.unpackbits(np.fromstring(q1[0], dtype=np.uint8))
         q = np.matrix([by_q])
-        dist, ind = self.__tree.query(q, k=10)
-        return dist, [self.__data[self.__ids[x]] for x in ind]
+        dist, ind = self.__tree.query(q, k=num)
+        return dist[0], [self.__data[self.__ids[x]] for x in ind[0]]
+
+#
