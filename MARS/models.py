@@ -61,7 +61,7 @@ class Reactions(db.Entity):
     #Таблица реакиц это просто запись, что там нужно делать, к ней нужно подключить таблицу молекул, а была ли такая молекула в таблице молекул
     # если нет то добавить с марингом и изоморфным вложение и указанием роли. ИМ чтобы выяснить. МАР - словарь превратить в словарь цифр, пар столько сколько и атомов лист имеет четкое число элементов.
     #добавление объектов мэни ту мэни в пони
-    def __init__(self, reaction, fingerprint=None,):
+    def __init__(self, reaction, fingerprint=None):
         tempfear = Reactions.get_reaction_fear(reaction)
         query0 = select(r.id for r in Reactions if tempfear == r.fear)[:]
         # проверка на наличие переданной реакции в БД
@@ -70,28 +70,24 @@ class Reactions(db.Entity):
             super(self, Reactions).__init__(fear=tempfear, fingerprint=fingerprint)
 
             for molecs in reaction.substarts:
-                 tempfearm1 = Molecules.get_fear(molecs)
-                 molecule = Molecules.get(fear = tempfearm1)
-                 # существуют ли исходные в-ва реакции в БД. Проверка по строковому представлению молекулы
-
-                 if not molecule:
-                     molecule = Molecules(molecs)
-
-                 rm = ReactionsMolecules(molecule=molecule, reaction=self, product=False, mapping=dict([]))
+                tempfearm1 = Molecules.get_fear(molecs)
+                molecule = Molecules.get(fear=tempfearm1)
+                
+                # существуют ли исходные в-ва реакции в БД
+                if not molecule:
+                    molecule=Molecules(molecs)
+                
+                rm = ReactionsMolecules(molecule=molecule, reaction=self, product=False, mapping=dict([]))
 
             for molecp in reaction.products:
-                 tempfearm2 = Molecules.get_fear(molecp)
-                 query2 = Molecules.get(fear = tempfearm2)
-                 # существуют ли образующиеся в-ва реакции в БД. Проверка по строковому представлению молекулы
-
-                 if not query2:
-                     fear_str = Molecules.get_fear(molecp)
-                     data = node_link_data(molecp)
-                     if fingerprint is None:
-                         fingerprint = self.get_fingerprints([molecp])[0]
-                      mp = Molecules(m, fear =fear_str, fingerprint=fingerprint)
-
-                 rm = ReactionsMolecules(molecule=mp, reaction=self, product=True, mapping=dict([]))
+                tempfearm2=Molecules.get_fear(molecp)
+                molecule=Molecules.get(fear=tempfearm2)
+                
+                # существуют ли исходные в-ва реакции в БД
+                if not molecule:
+                    molecule=Molecules(molecp)
+					
+                rm = ReactionsMolecules(molecule=molecule, reaction=self, product=True, mapping=dict([]))
 
             commit()
 
