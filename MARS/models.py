@@ -6,6 +6,8 @@ from networkx.readwrite.json_graph import node_link_data, node_link_graph
 from MODtools.descriptors.fragmentor import Fragmentor
 from CGRtools.CGRcore import CGRcore
 from functools import reduce
+from CGRtools.files.SDFrw import MoleculeContainer
+from CGRtools.files.RDFrw import RDFread, ReactionContainer
 
 
 db = Database()
@@ -13,7 +15,7 @@ fear = FEAR()
 cgr_core=CGRcore()
 fragmentor_mol = Fragmentor()
 fragmentor_rct = Fragmentor()
-
+rdf_read = RDFread()
 
 class Molecules(db.Entity):
     id = PrimaryKey(int, auto=True)
@@ -49,6 +51,12 @@ class Molecules(db.Entity):
     def get_fear(molecule):
         return fear.get_cgr_string(molecule)
 
+    @property
+    def structure(self):
+        molcont = node_link_graph(self.data)
+        molcont.__class__ = MoleculeContainer
+        return molcont
+
 
 class Reactions(db.Entity):
     id = PrimaryKey(int, auto=True)
@@ -65,7 +73,7 @@ class Reactions(db.Entity):
         if fingerprint is None:  # Boris: added situation when FP is None
             fingerprint = self.get_fingerprints([reaction])[0]
 
-        super(self, Reactions).__init__(fear=tempfear, fingerprint=fingerprint)
+        super(Reactions,self).__init__(fear=tempfear, fingerprint=fingerprint) # Boris: swapped Reactions and self
 
         for molecs in reaction.substrats:
             tempfearm1 = Molecules.get_fear(molecs)
@@ -89,14 +97,18 @@ class Reactions(db.Entity):
             # Boris: No object link rm is required to create new entity
             ReactionsMolecules(molecule=molecule, reaction=self, product=True, mapping=dict([]))
 
-
-
     @staticmethod
     def get_fingerprints(reactions, get_cgr=False):
-        cgrs = []
-        matrix = fragmentor_rct.get(cgrs)['X']
+        fp_list = []
+        for i in reactions:
+            fp_list.append(b'0101')
+            # matrix = fragmentor_mol.get(molecules)['X']
+            # todo: zulfia
+            return fp_list
+        # cgrs = []
+        # matrix = fragmentor_rct.get(cgrs)['X']
         # todo: zulfia
-  #      return (fingerprints, cgrs) if get_cgr else fingerprints
+        # return (fingerprints, cgrs) if get_cgr else fingerprints
 
     @staticmethod
     def get_reaction(reaction):
@@ -137,7 +149,11 @@ class Reactions(db.Entity):
 
     @staticmethod
     def get_fear(reaction):
-        return fear.get_cgr_string(reaction)
+        return fear.get_cgr_string(cgr_core.getCGR(reaction))
+
+    @property
+    def structure(self,):
+        pass
 
 
 class ReactionsMolecules(db.Entity):
@@ -146,6 +162,7 @@ class ReactionsMolecules(db.Entity):
     reaction = Required(Reactions)
     product = Required(bool)
     mapping = Required(Json)
+
 
 
 
