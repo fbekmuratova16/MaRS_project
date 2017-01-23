@@ -52,10 +52,10 @@ def fill_database_core(**kwargs):
                 if not Molecules.exists(fear=product_fear ):
                     Molecules(products_list[i], products_fp[i])
 
-            for i in range(0,len(x)):
-                react_fear = Reactions.get_reaction_fear(x[i])
+            for reaction in x:
+                react_fear = Reactions.get_fear(reaction)
                 if not Reactions.exists(fear=react_fear):
-                    Reactions()
+                    Reactions(reaction)
 
 
 

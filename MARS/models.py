@@ -33,7 +33,7 @@ class Molecules(db.Entity):
 
     @staticmethod
     def get_molecule(molecule):
-        return Molecules.get(fear=fear.getreactionhash(Molecules))
+        return Molecules.get(fear=fear.get_cgr_string(Molecules))
 
     @staticmethod
     def get_fingerprints(molecules):
@@ -47,7 +47,7 @@ class Molecules(db.Entity):
 
     @staticmethod
     def get_fear(molecule):
-        return fear.getreactionhash(molecule)
+        return fear.get_cgr_string(molecule)
 
 
 class Reactions(db.Entity):
@@ -65,31 +65,30 @@ class Reactions(db.Entity):
         if fingerprint is None:  # Boris: added situation when FP is None
             fingerprint = self.get_fingerprints([reaction])[0]
 
-            super(self, Reactions).__init__(fear=tempfear, fingerprint=fingerprint)
+        super(self, Reactions).__init__(fear=tempfear, fingerprint=fingerprint)
 
-            for molecs in reaction.substrats:
-                tempfearm1 = Molecules.get_fear(molecs)
-                molecule = Molecules.get(fear=tempfearm1)
+        for molecs in reaction.substrats:
+            tempfearm1 = Molecules.get_fear(molecs)
+            molecule = Molecules.get(fear=tempfearm1)
                 
-                # существуют ли исходные в-ва реакции в БД
-                if not molecule:
-                    molecule=Molecules(molecs)
+            # существуют ли исходные в-ва реакции в БД
+            if not molecule:
+                molecule=Molecules(molecs)
+
+            # Boris: No object link rm is required to create new entity
+            ReactionsMolecules(molecule=molecule, reaction=self, product=False, mapping=dict([]))
+
+        for molecp in reaction.products:
+            tempfearm2=Molecules.get_fear(molecp)
+            molecule=Molecules.get(fear=tempfearm2)
                 
-                ReactionsMolecules(molecule=molecule, reaction=self, product=False, mapping=dict([]))
+            # существуют ли исходные в-ва реакции в БД
+            if not molecule:
+                 molecule=Molecules(molecp)
 
-            for molecp in reaction.products:
-                tempfearm2=Molecules.get_fear(molecp)
-                molecule=Molecules.get(fear=tempfearm2)
-                
-                # существуют ли исходные в-ва реакции в БД
-                if not molecule:
-                    molecule=Molecules(molecp)
-					
-                ReactionsMolecules(molecule=molecule, reaction=self, product=True, mapping=dict([]))
+            # Boris: No object link rm is required to create new entity
+            ReactionsMolecules(molecule=molecule, reaction=self, product=True, mapping=dict([]))
 
-
-        else:
-            pass
 
 
     @staticmethod
@@ -102,16 +101,16 @@ class Reactions(db.Entity):
     @staticmethod
     def get_reaction(reaction):
         cgr = cgr_core.getCGR(reaction)
-        return Reactions.get(fear=fear.getreactionhash(cgr))
+        return Reactions.get(fear=fear.get_cgr_string(cgr))
 
     @staticmethod
     def get_reactions_by_molecule(molecule, product=None):
         if product is None:
             q = left_join(
-                r for m in Molecules if m.fear == fear.getreactionhash(molecule) for rs in m.reactions for r in
+                r for m in Molecules if m.fear == fear.get_cgr_string(molecule) for rs in m.reactions for r in
                 rs.reactions)
         else:
-            q = left_join(r for m in Molecules if m.fear == fear.getreactionhash(molecule) for rs in m.reactions if
+            q = left_join(r for m in Molecules if m.fear == fear.get_cgr_string(molecule) for rs in m.reactions if
                           rs.product == product for r in rs.reactions)
         return list(q)
 
@@ -120,17 +119,17 @@ class Reactions(db.Entity):
         d = dict()
         if product is not None:
             for i in product:
-                d[fear.getreactionhash(molecule)] = set()
+                d[fear.get_cgr_string(molecule)] = set()
             for m, r in left_join(
-                    (m.fear, r) for m in Molecules if m.fear in [fear.getreactionhash(x) for x in product] for rs in
+                    (m.fear, r) for m in Molecules if m.fear in [fear.get_cgr_string(x) for x in product] for rs in
                     m.reactions if rs.product for r in rs.reactions):
                 d[m].add(r)
 
         if reagent is not None:
             for i in reagent:
-                d[fear.getreactionhash(molecule)] = set()
+                d[fear.get_cgr_string(molecule)] = set()
             for m, r in left_join(
-                    (m.fear, r) for m in Molecules if m.fear in [fear.getreactionhash(x) for x in reagent] for rs in
+                    (m.fear, r) for m in Molecules if m.fear in [fear.get_cgr_string(x) for x in reagent] for rs in
                     m.reactions if not rs.product for r in rs.reactions):
                 d[m].add(r)
 
@@ -138,7 +137,7 @@ class Reactions(db.Entity):
 
     @staticmethod
     def get_fear(reaction):
-        return fear.getreactionhash(reaction)
+        return fear.get_cgr_string(reaction)
 
 
 class ReactionsMolecules(db.Entity):
