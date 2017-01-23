@@ -6,7 +6,6 @@ from MARS.parsers import structure_search_molecules
 from MARS.parsers import structure_search_reactions
 from MARS.parsers import similarity_search_reactions
 from MARS.parsers import similarity_search_molecules
-
 from MARS.parsers import substructure_search
 from MARS.parsers import fill_database
 from importlib.util import find_spec

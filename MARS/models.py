@@ -8,8 +8,6 @@ from CGRtools.CGRcore import CGRcore
 from functools import reduce
 
 
-
-
 db = Database()
 fear = FEAR()
 cgr_core=CGRcore()
@@ -55,21 +53,21 @@ class Molecules(db.Entity):
 class Reactions(db.Entity):
     id = PrimaryKey(int, auto=True)
     fear = Required(str, unique=True)
-    fingerprint = Required(buffer)
+    fingerprint = Required(bytes) #Boris: changed buffer to bytes
     molecules = Set('ReactionsMolecules', cascade_delete=True)
 
     #Таблица реакиц это просто запись, что там нужно делать, к ней нужно подключить таблицу молекул, а была ли такая молекула в таблице молекул
     # если нет то добавить с марингом и изоморфным вложение и указанием роли. ИМ чтобы выяснить. МАР - словарь превратить в словарь цифр, пар столько сколько и атомов лист имеет четкое число элементов.
     #добавление объектов мэни ту мэни в пони
     def __init__(self, reaction, fingerprint=None):
-        tempfear = Reactions.get_reaction_fear(reaction)
-        query0 = select(r.id for r in Reactions if tempfear == r.fear)[:]
-        # проверка на наличие переданной реакции в БД
-        if query0.len() == 0:
-            # Если такой реакции нет в БД
+        tempfear = Reactions.get_fear(reaction)
+        # Boris: deleted entity check, cause it's supposed to be done outside of the class
+        if fingerprint is None:  # Boris: added situation when FP is None
+            fingerprint = self.get_fingerprints([reaction])[0]
+
             super(self, Reactions).__init__(fear=tempfear, fingerprint=fingerprint)
 
-            for molecs in reaction.substarts:
+            for molecs in reaction.substrats:
                 tempfearm1 = Molecules.get_fear(molecs)
                 molecule = Molecules.get(fear=tempfearm1)
                 
@@ -77,7 +75,7 @@ class Reactions(db.Entity):
                 if not molecule:
                     molecule=Molecules(molecs)
                 
-                rm = ReactionsMolecules(molecule=molecule, reaction=self, product=False, mapping=dict([]))
+                ReactionsMolecules(molecule=molecule, reaction=self, product=False, mapping=dict([]))
 
             for molecp in reaction.products:
                 tempfearm2=Molecules.get_fear(molecp)
@@ -87,9 +85,8 @@ class Reactions(db.Entity):
                 if not molecule:
                     molecule=Molecules(molecp)
 					
-                rm = ReactionsMolecules(molecule=molecule, reaction=self, product=True, mapping=dict([]))
+                ReactionsMolecules(molecule=molecule, reaction=self, product=True, mapping=dict([]))
 
-            commit()
 
         else:
             pass
@@ -140,7 +137,7 @@ class Reactions(db.Entity):
         return reduce(set.intersection, d.values())
 
     @staticmethod
-    def get_reaction_fear(reaction):
+    def get_fear(reaction):
         return fear.getreactionhash(reaction)
 
 

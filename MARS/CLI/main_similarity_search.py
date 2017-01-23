@@ -9,6 +9,7 @@ from networkx.readwrite import json_graph
 
 
 
+
 def similarity_search_reactions_core(**kwargs):
     outputdata = RDFwrite(kwargs['output'])
     reactions = RDFread(kwargs['input'])

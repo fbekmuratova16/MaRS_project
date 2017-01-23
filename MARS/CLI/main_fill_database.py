@@ -38,7 +38,6 @@ def fill_database_core(**kwargs):
         print(substrats_list)
         print(products_list)
 
-
         substrats_fp = Molecules.get_fingerprints(substrats_list)
         products_fp = Molecules.get_fingerprints(products_list)
 
