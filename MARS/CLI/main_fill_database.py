@@ -40,22 +40,23 @@ def fill_database_core(**kwargs):
 
         substrats_fp = Molecules.get_fingerprints(substrats_list)
         products_fp = Molecules.get_fingerprints(products_list)
+        reactions_fps = Reactions.get_fingerprints(x)
 
         with db_session():
-            for i in range(0,len(substrats_list)):
+            for i in range(0, len(substrats_list)):
                 substrat_fear = Molecules.get_fear(substrats_list[i])
                 if not Molecules.exists(fear=substrat_fear):
                     Molecules(substrats_list[i],substrats_fp[i])
 
-            for i in range(0,len(products_list)):
+            for i in range(0, len(products_list)):
                 product_fear = Molecules.get_fear(products_list[i])
                 if not Molecules.exists(fear=product_fear ):
                     Molecules(products_list[i], products_fp[i])
 
-            for reaction in x:
-                react_fear = Reactions.get_fear(reaction)
+            for i in range(0, len(x)):
+                react_fear = Reactions.get_fear(x[i])
                 if not Reactions.exists(fear=react_fear):
-                    Reactions(reaction)
+                    Reactions(reaction=x[i],fingerprint=reactions_fps[i])
 
 
 

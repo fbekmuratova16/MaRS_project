@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from pony.orm import Database, PrimaryKey, Required, Set, Json, buffer, left_join, sql_debug, select, commit
 from CGRtools.FEAR import FEAR
 from networkx.readwrite.json_graph import node_link_data, node_link_graph
@@ -9,7 +8,7 @@ from functools import reduce
 from CGRtools.files.SDFrw import MoleculeContainer
 from CGRtools.files.RDFrw import RDFread, ReactionContainer
 import networkx as nx
-
+from .files.Zulfia import get_bitstring
 
 db = Database()
 fear = FEAR()
@@ -31,7 +30,7 @@ class Molecules(db.Entity):
         if fingerprint is None:
             fingerprint = self.get_fingerprints([molecule])[0]
 
-        super(Molecules,self).__init__(data=data, fear=fear_str, fingerprint=fingerprint)
+        super(Molecules,self).__init__(data=data, fear=fear_str, fingerprint=fingerprint.bytes)
 
     @staticmethod
     def get_molecule(molecule):
@@ -39,13 +38,8 @@ class Molecules(db.Entity):
 
     @staticmethod
     def get_fingerprints(molecules):
-        fp_list = []
-        for i in molecules:
-            fp_list.append(b'0101')
-
-        #matrix = fragmentor_mol.get(molecules)['X']
-        # todo: zulfia
-        return fp_list
+        dataframe = fragmentor_mol.get(molecules)['X']
+        return get_bitstring(dataframe)
 
     @staticmethod
     def get_fear(molecule):
@@ -73,7 +67,7 @@ class Reactions(db.Entity):
         if fingerprint is None:  # Boris: added situation when FP is None
             fingerprint = self.get_fingerprints([reaction])[0]
 
-        super(Reactions,self).__init__(fear=tempfear, fingerprint=fingerprint) # Boris: swapped Reactions and self
+        super(Reactions,self).__init__(fear=tempfear, fingerprint=fingerprint.bytes) # Boris: swapped Reactions and self
 
         for molecs in reaction.substrats:
             tempfearm1 = Molecules.get_fear(molecs)
@@ -99,16 +93,14 @@ class Reactions(db.Entity):
 
     @staticmethod
     def get_fingerprints(reactions, get_cgr=False):
-        fp_list = []
-        for i in reactions:
-            fp_list.append(b'0101')
-            # matrix = fragmentor_mol.get(molecules)['X']
-            # todo: zulfia
-            return fp_list
-        # cgrs = []
-        # matrix = fragmentor_rct.get(cgrs)['X']
-        # todo: zulfia
-        # return (fingerprints, cgrs) if get_cgr else fingerprints
+        cgrs = []
+        for reaction in reactions:
+            cgr = cgr_core.getCGR(reaction)
+            cgrs.append(cgr)
+
+        dataframe = fragmentor_rct.get(cgrs)['X']
+
+        return (get_bitstring(dataframe), cgrs) if get_cgr else get_bitstring(dataframe)
 
     @staticmethod
     def get_reaction(reaction):
@@ -172,9 +164,7 @@ class ReactionsMolecules(db.Entity):
     mapping = Required(Json)
 
 
-
-
-db.bind("sqlite", "data.db")
+db.bind("sqlite", "datatest.db")
 db.generate_mapping(create_tables=True)
 sql_debug(True)
 
