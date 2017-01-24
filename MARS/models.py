@@ -8,6 +8,7 @@ from CGRtools.CGRcore import CGRcore
 from functools import reduce
 from CGRtools.files.SDFrw import MoleculeContainer
 from CGRtools.files.RDFrw import RDFread, ReactionContainer
+import networkx as nx
 
 
 db = Database()
@@ -15,7 +16,6 @@ fear = FEAR()
 cgr_core=CGRcore()
 fragmentor_mol = Fragmentor()
 fragmentor_rct = Fragmentor()
-rdf_read = RDFread()
 
 class Molecules(db.Entity):
     id = PrimaryKey(int, auto=True)
@@ -152,8 +152,16 @@ class Reactions(db.Entity):
         return fear.get_cgr_string(cgr_core.getCGR(reaction))
 
     @property
-    def structure(self,):
-        pass
+    def structure(self):
+        products = []
+        substrats = []
+        for mr in self.molecules:
+            molcont = nx.relabel_nodes(mr.molecule.structure, dict(mr.mapping))
+            if mr.product:
+                products.append(molcont)
+            else:
+                substrats.append(molcont)
+        return ReactionContainer(products=products, substrats=substrats)
 
 
 class ReactionsMolecules(db.Entity):
