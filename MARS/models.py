@@ -111,11 +111,10 @@ class Reactions(db.Entity):
     def get_reactions_by_molecule(molecule, product=None):
         if product is None:
             q = left_join(
-                r for m in Molecules if m.fear == fear.get_cgr_string(molecule) for rs in m.reactions for r in
-                rs.reactions)
+                rs.reaction for m in Molecules if m.fear == fear.get_cgr_string(molecule) for rs in m.reactions)
         else:
-            q = left_join(r for m in Molecules if m.fear == fear.get_cgr_string(molecule) for rs in m.reactions if
-                          rs.product == product for r in rs.reactions)
+            q = left_join(rs.reaction for m in Molecules if m.fear == fear.get_cgr_string(molecule) for rs in m.reactions if
+                          rs.product == product)
         return list(q)
 
     @staticmethod

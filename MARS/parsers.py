@@ -12,8 +12,8 @@ from .CLI.main_fill_database import fill_database_core
 def structure_search_molecules(subparsers):
     parser = subparsers.add_parser('struct_mol', help='Simple structure search of given Molecule',
                                    formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--input", "-i", default="input.rdf", type=argparse.FileType('r'),
-                        help="RDF inputfile")
+    parser.add_argument("--input", "-i", default="input.sdf", type=argparse.FileType('r'),
+                        help="SDF inputfile")
     parser.add_argument("--output", "-o", default="output.rdf", type=argparse.FileType('w'),
                         help="RDF file containing needed reations")
     parser.add_argument("--product","-pr",action = 'store_true', help = "Use this if you are"
@@ -53,6 +53,7 @@ def similarity_search_reactions(subparsers):
 
     parser.set_defaults(func=similarity_search_reactions_core)
 
+
 def similarity_search_molecules(subparsers):
     parser = subparsers.add_parser('similar_mol',
                                    help='Molecules similarity search. This one searches similar Molecules,'
@@ -62,7 +63,7 @@ def similarity_search_molecules(subparsers):
                         help="SDF inputfile")
     parser.add_argument("--output", "-o", default="output.sdf", type=argparse.FileType('w'),
                         help="SDFile containing similar molecules with Tanimoto Index as property.")
-    parser.add_argument("--treepath", "-tp", default="C://", type=str, help='Path to BallTree')
+    parser.add_argument("--treepath", "-tp", default="C:\\MARS", type=str, help='Path to BallTree')
     parser.add_argument("--rebuild", '-rb', action='store_true', help='Use this if want to rebuild your BallTree')
     parser.add_argument("--number", "-n", type=int, default=10,
                         help='Number of similar molecules, that you want to get')

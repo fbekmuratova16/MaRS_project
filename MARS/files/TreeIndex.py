@@ -34,7 +34,7 @@ class TreeIndex(object):
 
     def get_similar(self, structure, num):
         q1 = self.__data.get_fingerprints([structure])
-        by_q = np.unpackbits(np.fromstring(q1[0], dtype=np.uint8))
+        by_q = np.unpackbits(np.fromstring(q1[0].bytes, dtype=np.uint8))
         q = np.matrix([by_q])
         dist, ind = self.__tree.query(q, k=num)
         return dist[0], [self.__data[self.__ids[x]] for x in ind[0]]
